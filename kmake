@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+make defconfig ARCH=um
+[[ "$?" != 0 ]] && exit 77;
+##make menuconfig ARCH=um
+make ARCH=um
+[[ "$?" != 0 ]] && exit 77;
+
+exit 0;
+

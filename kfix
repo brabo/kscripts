@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+
+if [ ! $# == 1 ]; then
+	echo "Usage: $0 kernel-version";
+	exit 1;
+fi
+pwd=$(pwd);
+printf "PWD:  %s\n" "$pwd";
+
+kver="$1";
+printf "KVER: %s\n" "$kver";
+
+if [[ -d "$HOME/kernels/linux-$kver" ]]
+then
+	printf "KVER %s present!\n" "$kver";
+	exit 0;
+elif [[ -f "$HOME/kernels/linux-$kver.tar.xz" ]]
+then
+	printf "KVER %s NOT present!\n" "$kver";
+	pushd "$HOME/kernels";
+	tar xvJf "linux-$kver.tar.xz";
+else
+	printf "KVER %s NOT present!\n" "$kver";
+	major="${kver%%.*}";
+	minor="${kver%.*}";
+	minor="${minor##*.}";
+	rev="${kver##*.}";
+	base="http://www.kernel.org/pub/linux/kernel/";
+
+	if [[ "$major" == '2' && "$minor" == '6' ]];
+	then
+		series="2.6";
+		printf "Got %s kernel\n" "$series";
+	fi
+
+	if [[ "$major" == '3' ]];
+	then
+		series="3.x";
+		printf "Got %s kernel\n" "$series";
+	fi
+
+	if [[ "$major" == '4' ]];
+	then
+		series="4.x";
+		printf "Got %s kernel\n" "$series";
+	fi
+
+
+	printf "Fetching linux kernel:\nmajor %s\nminor %s\nrev   %s\n" "$major" "$minor" "$rev";
+	pushd "$HOME/kernels";
+	wget "http://www.kernel.org/pub/linux/kernel/v$series/linux-$kver.tar.xz";
+	tar xvJf "linux-$kver.tar.xz";
+fi
+pushd "linux-$kver";
+kmake;
+[[ "$?" != 0 ]] && exit 77;
+kmodinst "$kver";
+[[ "$?" != 0 ]] && exit 77;
+popd;
+popd;
+
+
+exit 0;
+
+
+

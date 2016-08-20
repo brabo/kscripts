@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+./linux eth0=tuntap,tap0,, ubda="$HOME/uml/jessie.img"

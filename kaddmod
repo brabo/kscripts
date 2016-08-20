@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+if [ ! $# == 2 ]; then
+	echo "Usage: $0 kernel-version path-to-sync";
+	exit 1;
+fi
+
+kver="$1";
+printf "KVER: %s\n" "$kver";
+path="$2";
+printf "path: %s last part %s\n" "$path" "${path##*/}";
+
+if [[ ! -d "$HOME/kernels/linux-$kver" ]]
+then
+	printf "KVER %s NOT present!\n" "$kver";
+	kfix "$kver";
+	[[ "$?" != 0 ]] && exit 77;
+fi
+
+
+make clean;
+make KVER="$kver";
+[[ "$?" != 0 ]] && exit 77;
+sudo mount "$HOME/uml/jessie.img" "$HOME/uml/jessie.dir" -o loop;
+sudo rm -rf "$HOME/uml/jessie.dir/root/${path##*/}";
+sudo rsync -azP "$path" "$HOME/uml/jessie.dir/root/";
+sudo umount "$HOME/uml/jessie.dir";
+sudo sync;
+pushd "$HOME/kernels/linux-$kver";
+uml;
+popd;

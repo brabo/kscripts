@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+if [ ! $# == 1 ]; then
+	echo "Usage: $0 kernel-version";
+	exit 1;
+fi
+
+kver="$1";
+printf "KVER: %s\n" "$kver";
+
+
+if [[ ! -d "$HOME/kernels/linux-$kver" ]]
+then
+	printf "KVER %s NOT present!\n" "$kver";
+	exit 2;
+fi
+
+pushd "$HOME/kernels/linux-$kver";
+sudo mount "$HOME/uml/jessie.img" "$HOME/uml/jessie.dir" -o loop;
+sudo make modules_install INSTALL_MOD_PATH="$HOME/uml/jessie.dir/" ARCH=um;
+[[ "$?" != 0 ]] && exit 77;
+sudo umount "$HOME/uml/jessie.dir";
+sudo sync;
+popd;
+
+exit 0;
